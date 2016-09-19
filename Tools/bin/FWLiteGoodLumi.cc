@@ -19,6 +19,8 @@
 #include "FWCore/PythonParameterSet/interface/PythonProcessDesc.h"
 #include "DataFormats/Provenance/interface/LuminosityBlockRange.h"
 
+std::string RUN_BRANCH = "run";
+std::string LUMI_BRANCH = "lumi";
 
 bool jsonContainsEvent (const std::vector< edm::LuminosityBlockRange > &jsonVec, int run, int lumi)
 {
@@ -65,21 +67,33 @@ int main(int argc, char ** argv){
   std::string outputFilename = argv[3];
 
   //create output file
-  TFile *outputFile = new TFile( outputFilename.c_str(), "RECREATE");
+  TFile *outputFile = TFile::Open( outputFilename.c_str(), "RECREATE");
   
   //loop over all TTrees in the file and add the weight branch to each of them
-  TFile inputFile(inputFilename.c_str(), "UPDATE");
-  inputFile.cd();
-  inputFile.Purge(); //purge unwanted TTree cycles in file
-  TIter nextkey(inputFile.GetListOfKeys());
+  TFile *inputFile = TFile::Open(inputFilename.c_str(), "READ");
+  assert(inputFile);
+  inputFile->cd();
+  TIter nextkey(inputFile->GetListOfKeys());
   TKey *key;
+  TKey *previous = NULL;
   while((key = (TKey*)nextkey())){
     std::string className = key->GetClassName();
     std::cout << "Getting key from file.  Class type: " << className << std::endl;
     if(className.compare("TTree") != 0){
       std::cout << "Skipping key (not a TTree)" << std::endl;
+      outputFile->cd();
+      TObject *outObj = key->ReadObj();
+      outObj->Write();
+      inputFile->cd();
       continue;
     }
+
+    //if this key has the same name as the previous one, it's an unwanted cycle and we skip it
+    if(previous != NULL && strcmp(key->GetName(), previous->GetName()) == 0)
+    {
+        continue;
+    }
+    previous = key;
     
     TTree *inputTree = (TTree*)key->ReadObj();
     std::cout << "Processing tree " << inputTree->GetName() << std::endl;
@@ -91,8 +105,8 @@ int main(int argc, char ** argv){
     
     UInt_t run = 0;
     UInt_t lumi = 0;
-    inputTree->SetBranchAddress("run", &run);
-    inputTree->SetBranchAddress("lumi", &lumi);
+    inputTree->SetBranchAddress(RUN_BRANCH.c_str(), &run);
+    inputTree->SetBranchAddress(LUMI_BRANCH.c_str(), &lumi);
 
 
     //store the weights
@@ -106,10 +120,10 @@ int main(int argc, char ** argv){
     }
     //save
     outputTree->Write();
-    inputFile.cd();
+    inputFile->cd();
     std::cout << "Output Number of Events: " << outputTree->GetEntries() << "\n";
   }
-  inputFile.Close();
+  inputFile->Close();
   std::cout << "Closing output file." << std::endl;    
   outputFile->Close();
   delete outputFile;   
