@@ -1,19 +1,19 @@
 import os
 
-version = 'v10'
-directory="/storage/af/group/phys_exotica/delayedjets/displacedJetMuonAnalyzer/Run3/V1p19/Data2022/{0}/normalized/".format(version)
-golden_json_path = '/storage/af/user/christiw/login-1/christiw/LLP/Run3/CMSSW_10_6_30/src/run3_llp_analyzer/data/Certification/20221215/'
-samples = [
-#'DisplacedJet-EXOCSCCluster_Run2022E-PromptReco-v1',
-'DisplacedJet-EXOCSCCluster_Run2022F-PromptReco-v1',
-#'DisplacedJet-EXOCSCCluster_Run2022G-PromptReco-v1',
-]
-for sample in samples:
+version = 'v12'
+golden_json_path = "/storage/af/user/christiw/login-1/christiw/LLP/Run3/CMSSW_9_4_4/src/RazorCommon/Tools/data/Run3/"
+samples = {
+#        '2022':"Muon-EXOCSCCluster_Run2023-PromptReco.root",
+        '2023':"Muon-EXOCSCCluster_Run2023-PromptReco",
+}
+json = {
+        '2022':'Cert_Collisions2022_355100_362760_Golden.json',
+        '2023':'Cert_Collisions2023_366442_370790_Golden.json',
+}
+for year, sample in samples.items():
+        directory="/storage/af/group/phys_exotica/delayedjets/displacedJetMuonAnalyzer/Run3/V1p19/Data{0}/{1}/normalized/".format(year, version)
         print(sample)
-        if '2022E' in sample:cert = golden_json_path + 'Cert_Collisions2022_eraE_359022_360331_Golden.json'
-        elif '2022F' in sample: cert = golden_json_path + 'Cert_Collisions2022_eraF_360390_362167_Golden.json'
-        elif '2022G' in sample: cert = golden_json_path + 'Cert_Collisions2022_eraG_362433_362760_Golden.json'
-        else: assert(False)
+        cert = golden_json_path + json[year]
 
 	input_file = sample + '.root'
 	output_file = sample + '_goodLumi.root'

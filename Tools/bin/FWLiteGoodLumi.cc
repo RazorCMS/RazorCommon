@@ -19,8 +19,8 @@
 #include "FWCore/PythonParameterSet/interface/PythonProcessDesc.h"
 #include "DataFormats/Provenance/interface/LuminosityBlockRange.h"
 
-std::string RUN_BRANCH = "run";
-std::string LUMI_BRANCH = "lumi";
+std::string RUN_BRANCH = "runNum";
+std::string LUMI_BRANCH = "lumiSec";
 
 bool jsonContainsEvent (const std::vector< edm::LuminosityBlockRange > &jsonVec, int run, int lumi)
 {
