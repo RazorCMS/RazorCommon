@@ -1,5 +1,4 @@
 #include <iostream>
-#include <boost/bind.hpp>
 #include <algorithm>
 #include <TFile.h>
 #include <TSystem.h>
@@ -8,7 +7,7 @@
 
 #include "DataFormats/FWLite/interface/Event.h"
 #include "DataFormats/FWLite/interface/Handle.h"
-#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+#include "FWCore/FWLite/interface/FWLiteEnabler.h"
 
 #include "DataFormats/FWLite/interface/Run.h"
 #include "DataFormats/FWLite/interface/LuminosityBlock.h"
@@ -16,42 +15,40 @@
 #include "PhysicsTools/FWLite/interface/CommandLineParser.h"
 
 #include "FWCore/ParameterSet/interface/ProcessDesc.h"
-#include "FWCore/PythonParameterSet/interface/PythonProcessDesc.h"
+#include "FWCore/PythonParameterSet/interface/PyBind11ProcessDesc.h"
 #include "DataFormats/Provenance/interface/LuminosityBlockRange.h"
 
 std::string RUN_BRANCH = "runNum";
 std::string LUMI_BRANCH = "lumiSec";
 
-bool jsonContainsEvent (const std::vector< edm::LuminosityBlockRange > &jsonVec, int run, int lumi)
+bool jsonContainsEvent (const std::vector< edm::LuminosityBlockRange > &jsonVec, unsigned int run, unsigned int lumi)
 {
-   // if the jsonVec is empty, then no JSON file was provided so all
-   // events should pass
-   if (jsonVec.empty())
-   {
-      return true;
-   }
-   bool (* funcPtr) (edm::LuminosityBlockRange const &,
-                     edm::LuminosityBlockID const &) = &edm::contains;
-   edm::LuminosityBlockID lumiID (run,lumi);
-   std::vector< edm::LuminosityBlockRange >::const_iterator iter = 
-      std::find_if (jsonVec.begin(), jsonVec.end(),
-                    boost::bind(funcPtr, _1, lumiID) );
-   return jsonVec.end() != iter;
-
+  // if the jsonVec is empty, then no JSON file was provided so all
+  // events should pass
+  if (jsonVec.empty()) return true;
+  for (std::vector<edm::LuminosityBlockRange>::const_iterator lumisBegin = jsonVec.begin(),
+                                                              lumisEnd = jsonVec.end(),
+                                                              ilumi = lumisBegin;
+                                                              ilumi != lumisEnd;
+                                                              ++ilumi) 
+  {
+    if (run >= ilumi->startRun() && run <= ilumi->endRun() &&
+        lumi >= ilumi->startLumi() && lumi <= ilumi->endLumi()) return true;
+  }
+  return false;
 }
 
 int main(int argc, char ** argv){
   // load framework libraries
   gSystem->Load( "libFWCoreFWLite" );
-  AutoLibraryLoader::enable();
-
+  FWLiteEnabler::enable();
   if (argc != 4) {
     std::cout << "Use as follows: FWLiteGoodLumi <pythonFileWithGoodLumiJson> <inputDataFilename> <outputDataFilename> \n";
     return 0;
   }
 
-
-  PythonProcessDesc builder (argv[1], argc, argv);
+  std::vector<std::string> arguments(argv + 1, argv + argc);
+  PyBind11ProcessDesc builder (argv[1], true, arguments);
   edm::ParameterSet const& inputs = builder.processDesc()->getProcessPSet()->getParameter<edm::ParameterSet>("inputs");
 
   std::vector<edm::LuminosityBlockRange> jsonVector;
@@ -127,6 +124,5 @@ int main(int argc, char ** argv){
   std::cout << "Closing output file." << std::endl;    
   outputFile->Close();
   delete outputFile;   
-  
   return 0;
 }

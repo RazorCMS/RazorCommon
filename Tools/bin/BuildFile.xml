@@ -1,13 +1,9 @@
-<use   name="root"/>
-<use   name="boost"/>
+<use   name="rootcore"/>
 <use   name="FWCore/FWLite"/>
 <use   name="DataFormats/FWLite"/>
 <use   name="DataFormats/Luminosity"/>
 <use   name="FWCore/PythonParameterSet"/>
 <use   name="CommonTools/Utils"/>
-<use   name="PhysicsTools/FWLite"/>
-<use   name="PhysicsTools/Utilities"/>
-<use   name="PhysicsTools/SelectorUtils"/>
 <environment>
   <bin   file="FWLiteGoodLumi.cc"></bin>
 </environment>

@@ -15,13 +15,12 @@ for year, sample in samples.items():
         print(sample)
         cert = golden_json_path + json[year]
 
-	input_file = sample + '.root'
-	output_file = sample + '_goodLumi.root'
-	os.system("sed -i \"/JSONfile =/c\JSONfile = \'{}\'\" ../python/loadJson.py".format(cert))
-	#cat ../python/loadJson.py
-	os.system("FWLiteGoodLumi ../python/loadJson.py {} {}".format(directory + input_file, output_file))
-	os.system("cp {} {}/{}".format(output_file, directory, output_file))
-	if os.path.isfile(directory + output_file):
-		print("SUCCESS") 
-		os.system("rm {}".format(output_file))
-	else: print("SOMETHING WENT WRONG")
+        input_file = sample + '.root'
+        output_file = sample + '_goodLumi.root'
+        os.system("sed -i \"/JSONfile =/c\JSONfile = \'{}\'\" ../python/loadJson.py".format(cert))
+        os.system("FWLiteGoodLumi ../python/loadJson.py {} {}".format(directory + input_file, output_file))
+        os.system("cp {} {}/{}".format(output_file, directory, output_file))
+        if os.path.isfile(directory + output_file):
+        	print("SUCCESS") 
+        	os.system("rm {}".format(output_file))
+        else: print("SOMETHING WENT WRONG")
