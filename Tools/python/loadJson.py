@@ -9,7 +9,7 @@ process.inputs = cms.PSet (
 )
 
 # get JSON file correctly parced
-JSONfile = '/storage/af/user/christiw/login-1/christiw/LLP/Run3/CMSSW_9_4_4/src/RazorCommon/Tools/data/Run3/Cert_Collisions2023_366442_370790_Golden.json'
+JSONfile = '/storage/af/user/christiw/login-1/christiw/LLP/Run3/CMSSW_14_1_0_pre4/src/RazorCommon/Tools/data/Run3/Cert_Collisions2024_378981_386951_Golden.json'
 myList = LumiList.LumiList (filename = JSONfile).getCMSSWString().split(',')
 
 process.inputs.lumisToProcess.extend(myList)
